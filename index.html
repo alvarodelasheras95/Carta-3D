@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Carta 3D</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>
+<style>
+/* Layout: carta móvil de una columna; en pantallas anchas el visor 3D queda fijo a la izquierda y la lista de platos a la derecha. */
+:root {
+  --bg: #EDF2F0;
+  --surface: #FFFFFF;
+  --stage: #DCE7E3;
+  --fg: #10231D;
+  --muted: #4B635C;
+  --line: #C6D5CF;
+  --accent: #0B7A66;
+  --accent-fg: #FFFFFF;
+  --tint: #DDEEE9;
+  --font-display: 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-body: 'Figtree', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B1714;
+    --surface: #12231E;
+    --stage: #1A2E28;
+    --fg: #E4EFEB;
+    --muted: #9DB5AD;
+    --line: #27403A;
+    --accent: #46C9A8;
+    --accent-fg: #06231B;
+    --tint: #17322B;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B1714;
+  --surface: #12231E;
+  --stage: #1A2E28;
+  --fg: #E4EFEB;
+  --muted: #9DB5AD;
+  --line: #27403A;
+  --accent: #46C9A8;
+  --accent-fg: #06231B;
+  --tint: #17322B;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font: 400 16px/1.5 var(--font-body);
+  padding-block: 24px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 1080px; margin-inline: auto; display: grid; gap: 28px; }
+
+header { display: grid; gap: 6px; }
+.eyebrow { font: 500 12px/1.2 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+h1 { font: 700 clamp(34px, 8vw, 56px)/1 var(--font-display); letter-spacing: -.02em; margin: 0; text-wrap: balance; }
+.lede { margin: 4px 0 0; color: var(--muted); max-width: 52ch; }
+
+.layout { display: grid; gap: 24px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 860px) {
+  .layout { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 40px; align-items: start; }
+  .stage-col { position: sticky; top: calc(16px + env(safe-area-inset-top, 0px)); }
+}
+
+/* Visor */
+.stage { position: relative; background: var(--stage); border-radius: 20px; overflow: hidden; aspect-ratio: 5 / 4; max-width: 100%; }
+@media (min-width: 860px) { .stage { aspect-ratio: 1 / 1; } }
+model-viewer {
+  display: block; width: 100%; height: 100%;
+  background: transparent;
+  --poster-color: transparent;
+  --progress-bar-color: var(--accent);
+  --progress-mask: transparent;
+}
+.badge {
+  position: absolute; left: 12px; top: 12px;
+  font: 500 11px/1 var(--font-mono); letter-spacing: .06em; text-transform: uppercase;
+  padding: 7px 9px; border-radius: 999px; background: var(--surface); color: var(--muted); border: 1px solid var(--line);
+  pointer-events: none;
+}
+.ar-btn {
+  position: absolute; right: 12px; bottom: 12px;
+  font: 600 14px/1 var(--font-body); padding: 11px 14px; border-radius: 999px; border: 0;
+  background: var(--accent); color: var(--accent-fg); cursor: pointer;
+}
+model-viewer::part(default-ar-button) { display: none; }
+.ar-msg {
+  position: absolute; left: 12px; right: 12px; bottom: 64px; margin: 0;
+  font-size: 13px; line-height: 1.4; padding: 10px 12px; border-radius: 12px;
+  background: var(--surface); color: var(--fg); border: 1px solid var(--line);
+}
+.fallback { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: var(--muted); }
+
+.caption { display: grid; gap: 14px; padding-top: 16px; }
+.caption-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+h2 { font: 700 26px/1.15 var(--font-display); margin: 0; letter-spacing: -.01em; text-wrap: balance; }
+.price { font: 500 20px/1 var(--font-mono); font-variant-numeric: tabular-nums; }
+.caption p { margin: 0; color: var(--muted); max-width: 56ch; }
+
+.spec { display: grid; gap: 10px; border-top: 1px solid var(--line); padding-top: 14px; }
+.spec-title { font: 500 12px/1.2 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.spec dl { margin: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.spec dt { font-size: 12px; color: var(--muted); }
+.spec dd { margin: 2px 0 0; font: 500 16px/1.2 var(--font-mono); font-variant-numeric: tabular-nums; }
+.meter { height: 6px; border-radius: 999px; background: var(--line); overflow: hidden; }
+.meter > i { display: block; height: 100%; min-width: 3px; background: var(--accent); border-radius: 999px; transition: width .35s ease; }
+.meter-note { font-size: 13px; color: var(--muted); margin: 0; }
+
+/* Lista */
+.menu { display: grid; gap: 22px; min-width: 0; }
+.cat { font: 500 12px/1.2 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 4px; }
+.dishes { display: grid; margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
+.dish {
+  width: 100%; display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: 14px; align-items: center;
+  text-align: left; font: inherit; color: inherit; background: transparent;
+  border: 0; border-bottom: 1px solid var(--line); padding: 14px 10px; cursor: pointer; border-radius: 0;
+}
+.dish:hover { background: var(--tint); }
+.dish[aria-pressed="true"] { background: var(--tint); box-shadow: inset 3px 0 0 var(--accent); }
+.dish:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.thumb { width: 56px; height: 56px; border-radius: 50%; border: 1px solid var(--line); }
+.dish-name { font: 600 17px/1.25 var(--font-body); display: block; }
+.dish-desc { display: block; font-size: 14px; line-height: 1.4; color: var(--muted); margin-top: 2px; }
+.dish-side { display: grid; justify-items: end; gap: 6px; }
+.dish-price { font: 500 15px/1 var(--font-mono); font-variant-numeric: tabular-nums; }
+.tag3d { font: 500 11px/1 var(--font-mono); letter-spacing: .06em; padding: 4px 6px; border-radius: 6px; border: 1px solid var(--accent); color: var(--accent); }
+
+/* Cómo usar tus modelos */
+.howto { display: grid; gap: 12px; border-top: 1px solid var(--line); padding-top: 20px; }
+.howto h3 { font: 700 20px/1.2 var(--font-display); margin: 0; }
+.howto ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; color: var(--muted); }
+.howto ol strong { color: var(--fg); font-weight: 600; }
+.code-wrap { position: relative; min-width: 0; }
+pre {
+  margin: 0; padding: 14px; border-radius: 12px; overflow-x: auto; max-width: 100%;
+  background: var(--surface); border: 1px solid var(--line);
+  font: 400 12.5px/1.55 var(--font-mono); color: var(--fg);
+}
+.copy {
+  position: absolute; right: 8px; top: 8px; font: 600 12px/1 var(--font-body);
+  padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); cursor: pointer;
+}
+.copy:focus-visible, .ar-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.note { font-size: 13px; color: var(--muted); margin: 0; max-width: 60ch; }
+
+@media (prefers-reduced-motion: reduce) { .meter > i { transition: none; } }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Prueba de concepto · carta con QR</span>
+    <h1>Casa Ejemplo</h1>
+    <p class="lede">Toca un plato y gíralo con el dedo. Así se vería dentro de la carta digital de un restaurante.</p>
+  </header>
+
+  <div class="layout">
+    <section class="stage-col" aria-label="Visor del plato">
+      <div class="stage">
+        <model-viewer id="viewer"
+          src="hamburguesa.glb"
+          alt="Hamburguesa de ternera en plato blanco"
+          camera-controls
+          auto-rotate auto-rotate-delay="600" rotation-per-second="18deg"
+          shadow-intensity="1.1" shadow-softness="0.9" exposure="1.05"
+          environment-image="neutral"
+          camera-orbit="35deg 62deg auto"
+          interaction-prompt="auto"
+          ar ar-modes="webxr scene-viewer quick-look" ar-scale="fixed" ar-placement="floor" xr-environment>
+        </model-viewer>
+        <span class="badge">Modelo de prueba</span>
+        <button class="ar-btn" id="ar-btn" type="button">Ver en mi mesa</button>
+        <p class="ar-msg" id="ar-msg" role="status" hidden></p>
+        <div class="fallback" id="fallback" hidden>No se ha podido cargar el visor 3D. Recarga la página para intentarlo de nuevo.</div>
+      </div>
+
+      <div class="caption">
+        <div class="caption-head">
+          <h2 id="dish-title">Hamburguesa de ternera</h2>
+          <span class="price" id="dish-price">12,50 €</span>
+        </div>
+        <p id="dish-desc">Carne de ternera a la plancha, queso cheddar, lechuga, tomate y pan de sésamo.</p>
+
+        <div class="spec">
+          <span class="spec-title">Ficha del modelo</span>
+          <dl>
+            <div><dt>Formato</dt><dd>GLB</dd></div>
+            <div><dt>Triángulos</dt><dd id="spec-tris">5.452</dd></div>
+            <div><dt>Peso</dt><dd id="spec-kb">227 KB</dd></div>
+          </dl>
+          <div class="meter" role="img" aria-label="Peso del modelo frente al límite de 5 MB"><i id="spec-bar" style="width:4%"></i></div>
+          <p class="meter-note">Sobre un límite de 5 MB por plato. Estos modelos son de prueba y están hechos con formas simples, sin textura fotográfica. Un escaneo sin reducir suele pesar mucho más.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="menu" aria-label="Carta">
+      <div id="menu-list"></div>
+
+      <div class="howto">
+        <h3>Cómo poner tus propios platos</h3>
+        <ol>
+          <li><strong>Captura</strong> el plato y reduce la malla a unos 5 MB (Blender sirve).</li>
+          <li><strong>Exporta a GLB</strong> y sube el archivo junto a tu página.</li>
+          <li><strong>Cambia el <code>src</code></strong> del visor por tu archivo.</li>
+        </ol>
+        <div class="code-wrap">
+          <pre id="snippet" tabindex="0"></pre>
+          <button class="copy" id="copy" type="button">Copiar</button>
+        </div>
+        <p class="note">«Ver en mi mesa» coloca el plato a tamaño real sobre una superficie plana, con la cámara del móvil. Necesita un móvil compatible y la carta abierta en su navegador. En Android, además, el archivo GLB debe estar en una web pública con HTTPS.</p>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+(function () {
+  var DISHES = [
+    { id: 'hamburguesa', cat: 'Principales', name: 'Hamburguesa de ternera', price: '12,50 €',
+      desc: 'Carne de ternera a la plancha, queso cheddar, lechuga, tomate y pan de sésamo.',
+      alt: 'Hamburguesa de ternera en plato blanco', src: 'hamburguesa.glb', tris: 5452, bytes: 232588,
+      thumb: 'radial-gradient(circle at 50% 42%, #D69A4C 0 30%, #4A2816 31% 38%, #68A74B 39% 46%, #F2F1EC 47%)' },
+    { id: 'pizza', cat: 'Principales', name: 'Pizza margarita', price: '10,00 €',
+      desc: 'Salsa de tomate, mozzarella y albahaca fresca sobre masa fina.',
+      alt: 'Pizza margarita sobre tabla de madera', src: 'pizza.glb', tris: 6608, bytes: 270056,
+      thumb: 'radial-gradient(circle at 50% 50%, #F4EBD3 0 14%, #B5281F 15% 58%, #E0B16A 59% 74%, #8B6B47 75%)' },
+    { id: 'tarta', cat: 'Postres', name: 'Tarta de queso', price: '5,50 €',
+      desc: 'Estilo vasca, con el centro cremoso y la parte superior tostada.',
+      alt: 'Porción de tarta de queso con arándanos en plato oscuro', src: 'tarta-de-queso.glb', tris: 2952, bytes: 129904,
+      thumb: 'radial-gradient(circle at 50% 50%, #2C2A68 0 8%, #4E2814 9% 56%, #2B373C 57%)' }
+  ];
+  var BUDGET = 5 * 1024 * 1024;
+  var viewer = document.getElementById('viewer');
+  var current = 'hamburguesa';
+
+  function fmt(n) { return n.toLocaleString('es-ES'); }
+
+  function renderList() {
+    var host = document.getElementById('menu-list');
+    var cats = [];
+    DISHES.forEach(function (d) { if (cats.indexOf(d.cat) < 0) cats.push(d.cat); });
+    host.innerHTML = '';
+    cats.forEach(function (cat) {
+      var block = document.createElement('div');
+      var h = document.createElement('h3');
+      h.className = 'cat';
+      h.textContent = cat;
+      var ul = document.createElement('ul');
+      ul.className = 'dishes';
+      DISHES.filter(function (d) { return d.cat === cat; }).forEach(function (d) {
+        var li = document.createElement('li');
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'dish';
+        b.dataset.id = d.id;
+        b.setAttribute('aria-pressed', d.id === current ? 'true' : 'false');
+        b.innerHTML =
+          '<span class="thumb" style="background:' + d.thumb + '"></span>' +
+          '<span><span class="dish-name"></span><span class="dish-desc"></span></span>' +
+          '<span class="dish-side"><span class="dish-price"></span><span class="tag3d">3D</span></span>';
+        b.querySelector('.dish-name').textContent = d.name;
+        b.querySelector('.dish-desc').textContent = d.desc;
+        b.querySelector('.dish-price').textContent = d.price;
+        b.addEventListener('click', function () { select(d.id, true); });
+        li.appendChild(b);
+        ul.appendChild(li);
+      });
+      block.appendChild(h);
+      block.appendChild(ul);
+      host.appendChild(block);
+    });
+  }
+
+  function select(id, scroll) {
+    var d = DISHES.filter(function (x) { return x.id === id; })[0];
+    if (!d) return;
+    current = id;
+    viewer.setAttribute('alt', d.alt);
+    viewer.setAttribute('src', d.src);
+    document.getElementById('dish-title').textContent = d.name;
+    document.getElementById('dish-price').textContent = d.price;
+    document.getElementById('dish-desc').textContent = d.desc;
+    document.getElementById('spec-tris').textContent = fmt(d.tris);
+    document.getElementById('spec-kb').textContent = Math.round(d.bytes / 1024) + ' KB';
+    document.getElementById('spec-bar').style.width = Math.max(1, d.bytes / BUDGET * 100).toFixed(1) + '%';
+    document.querySelectorAll('.dish').forEach(function (b) {
+      b.setAttribute('aria-pressed', b.dataset.id === id ? 'true' : 'false');
+    });
+    if (scroll && window.matchMedia('(max-width: 859px)').matches) {
+      var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var stage = document.querySelector('.stage');
+      var r = stage.getBoundingClientRect();
+      if (r.top < 0 || r.bottom > window.innerHeight) {
+        stage.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+      }
+    }
+  }
+
+  var SNIPPET = [
+    '<script type="module"',
+    '  src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js"><\/script>',
+    '',
+    '<model-viewer src="mi-plato.glb"',
+    '  alt="Descripción del plato"',
+    '  camera-controls auto-rotate',
+    '  shadow-intensity="1" environment-image="neutral"',
+    '  ar ar-scale="fixed" ar-placement="floor"',
+    '  ar-modes="webxr scene-viewer quick-look">',
+    '</model-viewer>'
+  ].join('\n');
+  var pre = document.getElementById('snippet');
+  pre.textContent = SNIPPET;
+
+  var copyBtn = document.getElementById('copy');
+  copyBtn.addEventListener('click', function () {
+    function done(ok) {
+      copyBtn.textContent = ok ? 'Copiado' : 'Selecciona y copia';
+      setTimeout(function () { copyBtn.textContent = 'Copiar'; }, 1800);
+    }
+    function fallback() {
+      try {
+        var range = document.createRange();
+        range.selectNodeContents(pre);
+        var sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+      } catch (e) {}
+      done(false);
+    }
+    try {
+      navigator.clipboard.writeText(SNIPPET).then(function () { done(true); }, fallback);
+    } catch (e) { fallback(); }
+  });
+
+  var arBtn = document.getElementById('ar-btn');
+  var arMsg = document.getElementById('ar-msg');
+  var arTimer;
+  function showMsg(t) {
+    arMsg.textContent = t;
+    arMsg.hidden = false;
+    clearTimeout(arTimer);
+    arTimer = setTimeout(function () { arMsg.hidden = true; }, 9000);
+  }
+  arBtn.addEventListener('click', function () {
+    if (viewer.canActivateAR) {
+      try { viewer.activateAR(); } catch (e) { showMsg('No se pudo iniciar la realidad aumentada. Abre la carta directamente en el navegador del móvil.'); }
+    } else {
+      showMsg('La realidad aumentada no está disponible en este visor. Abre la carta en Chrome (Android) o Safari (iPhone) desde un móvil compatible.');
+    }
+  });
+  viewer.addEventListener('ar-status', function (e) {
+    if (e.detail && e.detail.status === 'failed') {
+      showMsg('No se pudo iniciar la realidad aumentada. Prueba a abrir la carta directamente en el navegador del móvil.');
+    }
+  });
+
+  renderList();
+  select(current, false);
+
+  setTimeout(function () {
+    if (!window.customElements || !customElements.get('model-viewer')) {
+      document.getElementById('fallback').hidden = false;
+    }
+  }, 6000);
+})();
+</script>
+
+</body>
+</html>
